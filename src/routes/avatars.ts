@@ -12,6 +12,7 @@ import type { ServerMessage } from "../types/ws";
 const SUBMISSION_WINDOW_MS = 60 * 60 * 1000;
 const MAX_SUBMISSIONS_PER_WINDOW = 5;
 const INITIAL_AVATAR_LIST_DELAY_MS = 3_000;
+const RATE_LIMIT_ENABLED = process.env.DISABLE_RATE_LIMIT !== "1";
 
 const submissionAttempts = new Map<string, number[]>();
 const pendingInitialLists = new Map<string, ReturnType<typeof setTimeout>>();
@@ -51,7 +52,7 @@ function isSubmissionRateLimited(clientIp: string): boolean {
 }
 
 const submitPayloadSchema = t.Object({
-  recordUri: t.String(),
+  recordUri: t.String({ pattern: "^resrec://" }),
   description: t.Optional(t.Nullable(t.String())),
   tags: t.Optional(t.Array(t.String())),
 });
@@ -123,7 +124,7 @@ export const avatarsRoute = new Elysia({ prefix: "/ws" }).ws("/avatars", {
       if (msg.type === "submit") {
         const clientIp = getClientIp(ws);
 
-        if (isSubmissionRateLimited(clientIp)) {
+        if (RATE_LIMIT_ENABLED && isSubmissionRateLimited(clientIp)) {
           send(ws, {
             type: "error",
             message:

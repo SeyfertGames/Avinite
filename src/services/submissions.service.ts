@@ -14,6 +14,10 @@ function normalizeTags(tags: string[] | undefined): string[] {
 }
 
 async function resolveSubmission(input: AvatarInput) {
+  if (!input.recordUri.startsWith("resrec://")) {
+    throw new Error("Submissions must use a resrec:// record URI.");
+  }
+
   let sourceUri = input.recordUri;
   let recordUri = input.recordUri;
   let name = "Unknown";
@@ -21,15 +25,13 @@ async function resolveSubmission(input: AvatarInput) {
   let thumbnailUri: string | null = null;
   let tags: string[] = [];
 
-  if (input.recordUri.startsWith("resrec://")) {
-    const record = await fetchResrecRecord(input.recordUri);
-    if (record) {
-      if (record.assetUri) recordUri = record.assetUri;
-      if (record.name) name = record.name;
-      if (record.ownerId) author = record.ownerId.replace(/^[UG]-/, "");
-      thumbnailUri = record.thumbnailUri;
-      tags = record.tags;
-    }
+  const record = await fetchResrecRecord(input.recordUri);
+  if (record) {
+    if (record.assetUri) recordUri = record.assetUri;
+    if (record.name) name = record.name;
+    if (record.ownerId) author = record.ownerId.replace(/^[UG]-/, "");
+    thumbnailUri = record.thumbnailUri;
+    tags = record.tags;
   }
 
   const submittedTags = normalizeTags(input.tags);
