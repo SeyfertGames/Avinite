@@ -28,7 +28,13 @@ function buildReviewEmbed(submission: AvatarSubmission, status = "pending") {
 
   return new EmbedBuilder()
     .setTitle("Avinite Submission")
-    .setColor(status === "Approved" ? 0x2ecc71 : status === "Rejected" ? 0xe74c3c : 0xf1c40f)
+    .setColor(
+      status === "approved"
+        ? 0x2ecc71
+        : status === "rejected"
+          ? 0xe74c3c
+          : 0xf1c40f,
+    )
     .setThumbnail(thumbnailUrl ?? null)
     .addFields(
       { name: "Name", value: submission.name },
@@ -36,7 +42,11 @@ function buildReviewEmbed(submission: AvatarSubmission, status = "pending") {
       { name: "Source URI", value: submission.sourceUri },
       { name: "Record URI", value: submission.recordUri },
       { name: "Description", value: submission.description || "(none)" },
-      { name: "Tags", value: submission.tags.length > 0 ? submission.tags.join(", ") : "(none)" },
+      {
+        name: "Tags",
+        value:
+          submission.tags.length > 0 ? submission.tags.join(", ") : "(none)",
+      },
       { name: "Status", value: status },
     );
 }
@@ -83,7 +93,10 @@ async function handleReviewDecision(
 
   const submission = await getAvatarSubmission(submissionId);
   if (!submission) {
-    await interaction.reply({ content: "Submission not found.", ephemeral: true });
+    await interaction.reply({
+      content: "Submission not found.",
+      ephemeral: true,
+    });
     return;
   }
 
@@ -120,7 +133,9 @@ class DiscordReviewBot {
     const channelId = process.env.DISCORD_REVIEW_CHANNEL_ID;
 
     if (!token || !channelId) {
-      console.warn("How tf do u forget to set DISCORD_BOT_TOKEN and DISCORD_REVIEW_CHANNEL_ID lmao");
+      console.warn(
+        "How tf do u forget to set DISCORD_BOT_TOKEN and DISCORD_REVIEW_CHANNEL_ID lmao",
+      );
       return;
     }
 
